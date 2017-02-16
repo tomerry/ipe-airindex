@@ -59,40 +59,102 @@
 
 	__webpack_require__(3);
 
-	function a() {
-	    function urlGet() {
-	        var aQuery = window.location.href.split("?"); //取得Get参数
-	        var aGET = new Array();
-	        if (aQuery.length > 1) {
-	            var aBuf = aQuery[1].split("&");
-	            for (var i = 0, iLoop = aBuf.length; i < iLoop; i++) {
-	                var aTmp = aBuf[i].split("="); //分离key与Value
-	                aGET[aTmp[0]] = aTmp[1];
-	            }
-	        }
-	        return aGET;
-	    }
+	var urlGet = __webpack_require__(7).urlGet;
 
-	    var GET = urlGet(); //获取URL的Get参数
+	var Animation = _interopRequire(__webpack_require__(8));
 
-	    var version = GET.version;
-	    var isnew = GET.isnew;
-	    var zhibiao = GET.zhibiao;
-
+	var s = 2017021612;
+	function b() {
+	    var version = s++;
+	    var isnew = "2";
+	    var zhibiao = "aqi";
 	    var url1 = "http://121.42.153.68:6088/SiteManage/ArcgisPub/images/" + version + "_" + zhibiao + "_" + isnew + ".png";
+	    return url1;
+	}
 
-	    var imageLayer = new AMap.ImageLayer({
-	        url: url1,
-	        bounds: new AMap.Bounds([73.36194508, 10.289688560000005], [135.07842412, 58.2061676]),
-	        zooms: [1, 18],
-	        opacity: 0.75
-	    });
+	function a() {
 	    var map = new AMap.Map("container", {
 	        resizeEnable: true,
 	        center: [116.33719, 39.942384],
-	        zoom: 4,
-	        layers: [new AMap.TileLayer(), imageLayer]
+	        zoom: 6,
+	        layers: [new AMap.TileLayer()]
 	    });
+
+	    var aaa = {
+	        add: function add(url, doneback) {
+	            var opacity = 0.75;
+
+	            function fade(fadeDoneBack, fadeFrame) {
+	                var b = new Animation({
+	                    doneBack: fadeDoneBack,
+	                    totalTime: 100,
+	                    onframe: function onframe(a) {
+	                        aaa._currentLayer && aaa._currentLayer.setOptions({ opacity: opacity * (1 - a) });
+	                        fadeFrame(a);
+	                    }
+	                });
+	                b.start();
+	            }
+
+	            function show(showDoneBack) {
+	                var b = new Animation({
+	                    doneBack: function doneBack() {
+	                        showDoneBack();
+	                    },
+	                    totalTime: 100,
+	                    onframe: function onframe(a) {
+	                        aaa._currentLayer && aaa._currentLayer.setOptions({ opacity: opacity * a });
+	                    }
+	                });
+	                b.start();
+	            }
+
+	            fade(function () {
+	                aaa._currentLayer && map.remove([aaa._currentLayer]);
+	                aaa._currentLayer = aaa._newlayer;
+	                aaa._newlayer = null;
+	                show(doneback);
+	            }, function (f) {
+	                if (f < 0.5) {
+	                    return;
+	                }
+	                var imageLayer = new AMap.ImageLayer({
+	                    url: url,
+	                    bounds: new AMap.Bounds([73.36194508, 10.289688560000005], [135.07842412, 58.2061676]),
+	                    zooms: [1, 18],
+	                    opacity: 0
+	                });
+	                map.add([imageLayer]);
+	                aaa._newlayer = imageLayer;
+	                show(doneback);
+	            });
+	        }
+
+	    };
+
+	    function slider_pre() {
+	        var url = b();
+	        var image = new Image();
+	        image.src = url;
+	        image.onload = function () {
+	            image.onload = null;
+	            aaa.add(url, slier);
+	        };
+	    }
+
+	    function slier() {
+	        setTimeout(function () {
+	            slider_pre();
+	        }, 2000);
+	    }
+
+	    // slider_pre();
+
+	    map.plugin(["AMap.ToolBar"], function () {
+	        map.addControl(new AMap.ToolBar());
+	    });
+
+	    map.setStatus({ scrollWheel: false });
 	}
 	$(document).ready(function () {
 	    a();
@@ -1845,8 +1907,8 @@
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
-		module.hot.accept("!!/Users/hill/works/mycode/ipe-airindex/node_modules/css-loader/index.js!/Users/hill/works/mycode/ipe-airindex/node_modules/autoprefixer-loader/index.js!/Users/hill/works/mycode/ipe-airindex/src/css/normalize.css", function() {
-			var newContent = require("!!/Users/hill/works/mycode/ipe-airindex/node_modules/css-loader/index.js!/Users/hill/works/mycode/ipe-airindex/node_modules/autoprefixer-loader/index.js!/Users/hill/works/mycode/ipe-airindex/src/css/normalize.css");
+		module.hot.accept("!!/Users/hill/works/ipe/ipe-airindex/node_modules/css-loader/index.js!/Users/hill/works/ipe/ipe-airindex/node_modules/autoprefixer-loader/index.js!/Users/hill/works/ipe/ipe-airindex/src/css/normalize.css", function() {
+			var newContent = require("!!/Users/hill/works/ipe/ipe-airindex/node_modules/css-loader/index.js!/Users/hill/works/ipe/ipe-airindex/node_modules/autoprefixer-loader/index.js!/Users/hill/works/ipe/ipe-airindex/src/css/normalize.css");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
@@ -2077,6 +2139,455 @@
 		}
 	}
 
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	exports.urlGet = urlGet;
+	exports.requestAnimationFrame = requestAnimationFrame;
+	exports.noop = noop;
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function urlGet() {
+	    var aQuery = window.location.href.split("?"); //取得Get参数
+	    var aGET = new Array();
+	    if (aQuery.length > 1) {
+	        var aBuf = aQuery[1].split("&");
+	        for (var i = 0, iLoop = aBuf.length; i < iLoop; i++) {
+	            var aTmp = aBuf[i].split("="); //分离key与Value
+	            aGET[aTmp[0]] = aTmp[1];
+	        }
+	    }
+	    return aGET;
+	}
+
+	function requestAnimationFrame() {
+	    return typeof window !== "undefined" && (window.requestAnimationFrame || window.msRequestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame) || function (func) {
+	        setTimeout(func, 16);
+	    };
+	}
+
+	function noop() {}
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+	/**
+	 * 动画主类
+	 */
+
+	var _util = __webpack_require__(7);
+
+	var requestAnimationFrame = _util.requestAnimationFrame;
+	var noop = _util.noop;
+
+	var easing = _interopRequire(__webpack_require__(9));
+
+	/**
+	 * @typedef {Object} IZRenderStage
+	 * @property {Function} update
+	 */
+
+	var Animation = function Animation(options) {
+	    options = options || {};
+	    this.onframe = options.onframe || noop;
+	    this._totalTime = options.totalTime;
+	    this._easyFunc = options.easeFunc || easing.linear;
+	    this._doneBack = options.doneBack || noop;
+	    this._running = false;
+	    this._time = null;
+	};
+
+	Animation.prototype = {
+
+	    _update: function _update() {
+	        var now = new Date().getTime();
+	        var delta = now - this._time;
+	        var percent = delta / this._totalTime;
+	        this.onframe(this._easyFunc(percent));
+	        if (percent >= 1) {
+	            this.stop();
+	            this._doneBack();
+	        }
+	    },
+
+	    _startLoop: function _startLoop() {
+	        var self = this;
+	        this._running = true;
+	        function step() {
+	            if (self._running) {
+	                requestAnimationFrame()(step);
+	                self._update();
+	            }
+	        }
+
+	        requestAnimationFrame()(step);
+	    }
+
+	    /**
+	     * 开始运行动画
+	     */
+	    , start: function start() {
+	        this._time = new Date().getTime();
+	        this._startLoop();
+	    }
+
+	    /**
+	     * 停止运行动画
+	     */
+	    , stop: function stop() {
+	        this._running = false;
+	    }
+	};
+
+	module.exports = Animation;
+
+/***/ },
+/* 9 */
+/***/ function(module, exports) {
+
+	/**
+	 * 缓动
+	 */
+	"use strict";
+
+	module.exports = {
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    linear: function linear(k) {
+	        return k;
+	    },
+
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    quadraticIn: function quadraticIn(k) {
+	        return k * k;
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    quadraticOut: function quadraticOut(k) {
+	        return k * (2 - k);
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    quadraticInOut: function quadraticInOut(k) {
+	        if ((k *= 2) < 1) {
+	            return 0.5 * k * k;
+	        }
+	        return -0.5 * (--k * (k - 2) - 1);
+	    },
+
+	    // 三次方的缓动（t^3）
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    cubicIn: function cubicIn(k) {
+	        return k * k * k;
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    cubicOut: function cubicOut(k) {
+	        return --k * k * k + 1;
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    cubicInOut: function cubicInOut(k) {
+	        if ((k *= 2) < 1) {
+	            return 0.5 * k * k * k;
+	        }
+	        return 0.5 * ((k -= 2) * k * k + 2);
+	    },
+
+	    // 四次方的缓动（t^4）
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    quarticIn: function quarticIn(k) {
+	        return k * k * k * k;
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    quarticOut: function quarticOut(k) {
+	        return 1 - --k * k * k * k;
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    quarticInOut: function quarticInOut(k) {
+	        if ((k *= 2) < 1) {
+	            return 0.5 * k * k * k * k;
+	        }
+	        return -0.5 * ((k -= 2) * k * k * k - 2);
+	    },
+
+	    // 五次方的缓动（t^5）
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    quinticIn: function quinticIn(k) {
+	        return k * k * k * k * k;
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    quinticOut: function quinticOut(k) {
+	        return --k * k * k * k * k + 1;
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    quinticInOut: function quinticInOut(k) {
+	        if ((k *= 2) < 1) {
+	            return 0.5 * k * k * k * k * k;
+	        }
+	        return 0.5 * ((k -= 2) * k * k * k * k + 2);
+	    },
+
+	    // 正弦曲线的缓动（sin(t)）
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    sinusoidalIn: function sinusoidalIn(k) {
+	        return 1 - Math.cos(k * Math.PI / 2);
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    sinusoidalOut: function sinusoidalOut(k) {
+	        return Math.sin(k * Math.PI / 2);
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    sinusoidalInOut: function sinusoidalInOut(k) {
+	        return 0.5 * (1 - Math.cos(Math.PI * k));
+	    },
+
+	    // 指数曲线的缓动（2^t）
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    exponentialIn: function exponentialIn(k) {
+	        return k === 0 ? 0 : Math.pow(1024, k - 1);
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    exponentialOut: function exponentialOut(k) {
+	        return k === 1 ? 1 : 1 - Math.pow(2, -10 * k);
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    exponentialInOut: function exponentialInOut(k) {
+	        if (k === 0) {
+	            return 0;
+	        }
+	        if (k === 1) {
+	            return 1;
+	        }
+	        if ((k *= 2) < 1) {
+	            return 0.5 * Math.pow(1024, k - 1);
+	        }
+	        return 0.5 * (-Math.pow(2, -10 * (k - 1)) + 2);
+	    },
+
+	    // 圆形曲线的缓动（sqrt(1-t^2)）
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    circularIn: function circularIn(k) {
+	        return 1 - Math.sqrt(1 - k * k);
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    circularOut: function circularOut(k) {
+	        return Math.sqrt(1 - --k * k);
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    circularInOut: function circularInOut(k) {
+	        if ((k *= 2) < 1) {
+	            return -0.5 * (Math.sqrt(1 - k * k) - 1);
+	        }
+	        return 0.5 * (Math.sqrt(1 - (k -= 2) * k) + 1);
+	    },
+
+	    // 创建类似于弹簧在停止前来回振荡的动画
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    elasticIn: function elasticIn(k) {
+	        var s;
+	        var a = 0.1;
+	        var p = 0.4;
+	        if (k === 0) {
+	            return 0;
+	        }
+	        if (k === 1) {
+	            return 1;
+	        }
+	        if (!a || a < 1) {
+	            a = 1;
+	            s = p / 4;
+	        } else {
+	            s = p * Math.asin(1 / a) / (2 * Math.PI);
+	        }
+	        return -(a * Math.pow(2, 10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p));
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    elasticOut: function elasticOut(k) {
+	        var s;
+	        var a = 0.1;
+	        var p = 0.4;
+	        if (k === 0) {
+	            return 0;
+	        }
+	        if (k === 1) {
+	            return 1;
+	        }
+	        if (!a || a < 1) {
+	            a = 1;
+	            s = p / 4;
+	        } else {
+	            s = p * Math.asin(1 / a) / (2 * Math.PI);
+	        }
+	        return a * Math.pow(2, -10 * k) * Math.sin((k - s) * (2 * Math.PI) / p) + 1;
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    elasticInOut: function elasticInOut(k) {
+	        var s;
+	        var a = 0.1;
+	        var p = 0.4;
+	        if (k === 0) {
+	            return 0;
+	        }
+	        if (k === 1) {
+	            return 1;
+	        }
+	        if (!a || a < 1) {
+	            a = 1;
+	            s = p / 4;
+	        } else {
+	            s = p * Math.asin(1 / a) / (2 * Math.PI);
+	        }
+	        if ((k *= 2) < 1) {
+	            return -0.5 * (a * Math.pow(2, 10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p));
+	        }
+	        return a * Math.pow(2, -10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p) * 0.5 + 1;
+	    },
+
+	    // 在某一动画开始沿指示的路径进行动画处理前稍稍收回该动画的移动
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    backIn: function backIn(k) {
+	        var s = 1.70158;
+	        return k * k * ((s + 1) * k - s);
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    backOut: function backOut(k) {
+	        var s = 1.70158;
+	        return --k * k * ((s + 1) * k + s) + 1;
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    backInOut: function backInOut(k) {
+	        var s = 1.70158 * 1.525;
+	        if ((k *= 2) < 1) {
+	            return 0.5 * (k * k * ((s + 1) * k - s));
+	        }
+	        return 0.5 * ((k -= 2) * k * ((s + 1) * k + s) + 2);
+	    },
+
+	    // 创建弹跳效果
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    bounceIn: function bounceIn(k) {
+	        return 1 - easing.bounceOut(1 - k);
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    bounceOut: function bounceOut(k) {
+	        if (k < 1 / 2.75) {
+	            return 7.5625 * k * k;
+	        } else if (k < 2 / 2.75) {
+	            return 7.5625 * (k -= 1.5 / 2.75) * k + 0.75;
+	        } else if (k < 2.5 / 2.75) {
+	            return 7.5625 * (k -= 2.25 / 2.75) * k + 0.9375;
+	        } else {
+	            return 7.5625 * (k -= 2.625 / 2.75) * k + 0.984375;
+	        }
+	    },
+	    /**
+	     * @param {number} k
+	     * @return {number}
+	     */
+	    bounceInOut: function bounceInOut(k) {
+	        if (k < 0.5) {
+	            return easing.bounceIn(k * 2) * 0.5;
+	        }
+	        return easing.bounceOut(k * 2 - 1) * 0.5 + 0.5;
+	    }
+	};
 
 /***/ }
 /******/ ]);
