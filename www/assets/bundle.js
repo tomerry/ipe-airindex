@@ -148,7 +148,7 @@
 	        }, 2000);
 	    }
 
-	    // slider_pre();
+	    slider_pre();
 
 	    map.plugin(["AMap.ToolBar"], function () {
 	        map.addControl(new AMap.ToolBar());
