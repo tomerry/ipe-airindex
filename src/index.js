@@ -64,7 +64,7 @@ function run() {
 
             function startShow(showDoneBack, onShowFrame) {
                 new Animation({
-                    totalTime: 700
+                    totalTime: 300
                     , doneBack: showDoneBack
                     , onframe: onShowFrame
                 }).start();
@@ -86,7 +86,7 @@ function run() {
 
             function onFadeFrame(rate) {
                 layerSwitcher._currentLayer && layerSwitcher._currentLayer.setOptions({opacity: opacity * (1 - rate)});
-                if (rate < 0.1) {
+                if (rate < 0.2) {
                     return;
                 }
                 if (!layerSwitcher._newlayer) {
