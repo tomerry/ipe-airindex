@@ -110,50 +110,53 @@
 	        "switch": function _switch(url, switchDoneBack) {
 	            var opacity = 0.75;
 
-	            function startFade(fadeDoneBack, onFadeFrame) {
+	            function startFade(fadeLayer, fadeDoneBack, onFadeFrame) {
 	                new Animation({
-	                    totalTime: 300,
-	                    doneBack: fadeDoneBack,
-	                    onframe: onFadeFrame
+	                    totalTime: 100,
+	                    doneBack: function () {
+	                        fadeDoneBack(fadeLayer);
+	                    },
+	                    onframe: function (rate) {
+	                        onFadeFrame(rate, fadeLayer);
+	                    }
 	                }).start();
 	            }
 
-	            function startShow(showDoneBack, onShowFrame) {
+	            function whenFadeDone(fadeLayer) {
+	                fadeLayer && map.remove([fadeLayer]);
+	            }
+
+	            function onFadeFrame(rate, fadeLayer) {}
+
+	            // ----
+
+	            function startShow(showLayer, showDoneBack, onShowFrame) {
 	                new Animation({
-	                    totalTime: 300,
-	                    doneBack: showDoneBack,
-	                    onframe: onShowFrame
+	                    totalTime: 50,
+	                    doneBack: function () {
+	                        showDoneBack(showLayer);
+	                    },
+	                    onframe: function (rate) {
+	                        onShowFrame(rate, showLayer);
+	                    }
 	                }).start();
 	            }
 
-	            function whenFadeDone() {
-	                var backLayer = layerSwitcher._currentLayer;
-	                setTimeout(function () {
-	                    backLayer && map.remove([backLayer]);
-	                }, 200);
-
-	                layerSwitcher._currentLayer = layerSwitcher._newlayer;
-	                layerSwitcher._newlayer = null;
+	            function onShowFrame(rate, showLayer) {
+	                showLayer && showLayer.setOptions({ opacity: Math.min(0.6, opacity * rate) });
 	            }
 
-	            function onShowFrame(rate) {
-	                layerSwitcher._currentLayer && layerSwitcher._currentLayer.setOptions({ opacity: opacity * rate });
+	            // ----
+
+	            var imageLayer = creatImageLyaer(url);
+	            map.add([imageLayer]);
+	            startShow(imageLayer, switchDoneBack, onShowFrame);
+
+	            if (layerSwitcher._currentLayer) {
+	                startFade(layerSwitcher._currentLayer, whenFadeDone, onFadeFrame);
 	            }
 
-	            function onFadeFrame(rate) {
-	                layerSwitcher._currentLayer && layerSwitcher._currentLayer.setOptions({ opacity: opacity * (1 - rate) });
-	                if (rate < 0.2) {
-	                    return;
-	                }
-	                if (!layerSwitcher._newlayer) {
-	                    var imageLayer = creatImageLyaer(url);
-	                    map.add([imageLayer]);
-	                    layerSwitcher._newlayer = imageLayer;
-	                    startShow(switchDoneBack, onShowFrame);
-	                }
-	            }
-
-	            startFade(whenFadeDone, onFadeFrame);
+	            layerSwitcher._currentLayer = imageLayer;
 	        }
 	    };
 
@@ -183,6 +186,8 @@
 	}
 
 	$(document).ready(run);
+
+	// fadeLayer && fadeLayer.setOptions({opacity: Math.max(0.3, opacity * (1 - rate))});
 
 /***/ },
 /* 2 */
