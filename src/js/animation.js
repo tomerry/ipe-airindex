@@ -1,22 +1,14 @@
 /**
  * 动画主类
  */
-
-
 import {requestAnimationFrame, noop}  from './util';
 import easing from './easing'
-
-/**
- * @typedef {Object} IZRenderStage
- * @property {Function} update
- */
-
 
 var Animation = function (options) {
     options = options || {};
     this.onframe = options.onframe || noop;
     this._totalTime = options.totalTime;
-    this._easyFunc = options.easeFunc || easing.linear;
+    this._easyFunc = options.easeFunc || easing.quadraticIn;
     this._doneBack = options.doneBack || noop;
     this._running = false;
     this._time = null;
@@ -40,12 +32,11 @@ Animation.prototype = {
         this._running = true;
         function step() {
             if (self._running) {
-                requestAnimationFrame()(step);
+                requestAnimationFrame(step);
                 self._update();
             }
         }
-
-        requestAnimationFrame()(step);
+        requestAnimationFrame(step);
     }
 
     /**
